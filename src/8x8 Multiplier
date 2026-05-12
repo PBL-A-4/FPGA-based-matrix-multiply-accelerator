@@ -1,1 +1,61 @@
+module multiplier_8x8 (
+    input  wire [7:0]  A,       // 8-bit Multiplicand
+    input  wire [7:0]  B,       // 8-bit Multiplier
+    output wire [15:0] Product  // 16-bit Product
+);
 
+    wire [15:0] pp [0:7];
+
+    genvar i;
+    generate
+        for (i = 0; i < 8; i = i + 1) begin : partial_products
+            // Each partial product is A AND-ed with bit i of B, shifted left by i
+            assign pp[i] = ({{8{1'b0}}, A} & {16{B[i]}}) << i;
+        end
+    endgenerate
+    // Fixed: Wires must be 18-bits to match the RCA output port
+    wire [17:0] sum0, sum1, sum2, sum3, sum4, sum5;
+    wire c0, c1, c2, c3, c4, c5;
+
+    // Stage 1
+    ripple_carry_adder_18bit rca0 (.A({2'b0, pp[0]}), .B({2'b0, pp[1]}), .Cin(1'b0),
+                                    .Sum(sum0), .Cout(c0), .Overflow());
+    // Stage 2
+    ripple_carry_adder_18bit rca1 (.A(sum0), .B({2'b0, pp[2]}), .Cin(1'b0),
+                                    .Sum(sum1), .Cout(c1), .Overflow());
+    // Stage 3
+    ripple_carry_adder_18bit rca2 (.A(sum1), .B({2'b0, pp[3]}), .Cin(1'b0),
+                                    .Sum(sum2), .Cout(c2), .Overflow());
+    // Stage 4
+    ripple_carry_adder_18bit rca3 (.A(sum2), .B({2'b0, pp[4]}), .Cin(1'b0),
+                                    .Sum(sum3), .Cout(c3), .Overflow());
+    // Stage 5
+    ripple_carry_adder_18bit rca4 (.A(sum3), .B({2'b0, pp[5]}), .Cin(1'b0),
+                                    .Sum(sum4), .Cout(c4), .Overflow());
+    // Stage 6
+    ripple_carry_adder_18bit rca5 (.A(sum4), .B({2'b0, pp[6]}), .Cin(1'b0),
+                                    .Sum(sum5), .Cout(c5), .Overflow());
+
+    // Final stage
+    wire [17:0] final_sum;
+    ripple_carry_adder_18bit rca6 (.A(sum5), .B({2'b0, pp[7]}), .Cin(1'b0),
+                                    .Sum(final_sum), .Cout(), .Overflow());
+
+    assign Product = final_sum[15:0];
+
+endmodule
+module ripple_carry_adder_18bit (
+    input  wire [17:0] A,
+    input  wire [17:0] B,
+    input  wire        Cin,
+    output wire [17:0] Sum,
+    output wire        Cout,
+    output wire        Overflow
+);
+    // Simple behavioral description of the RCA for 18-bits
+    assign {Cout, Sum} = A + B + Cin;
+assign Overflow = (A[17] == B[17]) && (Sum[17] != A[17]);
+endmodule
+
+    assign Overflow = (A[17] == B[17]) && (Sum[17] != A[17]);
+endmodule
