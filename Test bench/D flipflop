@@ -1,1 +1,73 @@
 
+TB
+module tb_d_ff;
+
+    reg clk, rst, D;
+
+    wire Q_basic,  Q_bar_basic;
+    wire Q_sync,   Q_bar_sync;
+    wire Q_async,  Q_bar_async;
+
+    // Instantiate all three variants
+    d_ff             uut0 (.clk(clk), .D(D), .Q(Q_basic), .Q_bar(Q_bar_basic));
+    d_ff_sync_reset  uut1 (.clk(clk), .rst(rst), .D(D), .Q(Q_sync),  .Q_bar(Q_bar_sync));
+    d_ff_async_reset uut2 (.clk(clk), .rst(rst), .D(D), .Q(Q_async), .Q_bar(Q_bar_async));
+
+    // Clock: 10ns period = 100 MHz
+    initial clk = 0;
+    always #5 clk = ~clk;
+
+    initial begin
+   
+        rst = 1;
+        D   = 0;
+        #12;  // hold reset for 12ns (past first posedge)
+
+      
+        rst = 0;
+        @(posedge clk); #1;
+        D = 1;
+
+        @(posedge clk); #1;
+        $display("T=%0t ns | D=1 captured | Q_basic=%b  Q_sync=%b  Q_async=%b",
+                  $time, Q_basic, Q_sync, Q_async);
+        // Expected: all = 1
+
+
+        @(posedge clk); #1;
+        D = 0;
+
+        @(posedge clk); #1;
+        $display("T=%0t ns | D=0 captured | Q_basic=%b  Q_sync=%b  Q_async=%b",
+                  $time, Q_basic, Q_sync, Q_async);
+        // Expected: all = 0
+
+        
+        D = 1;
+        @(posedge clk); #1;   // D=1 captured, all Q = 1
+        rst = 1;
+        #2;                    // 2ns after posedge, still mid-cycle
+        $display("T=%0t ns | Async rst=1 mid-cycle | Q_async=%b (expect 0)  Q_sync=%b (expect 1, waits for clk)",
+                  $time, Q_async, Q_sync);
+
+        @(posedge clk); #1;   // NOW sync reset takes effect
+        $display("T=%0t ns | After posedge with rst=1 | Q_sync=%b (expect 0)  Q_async=%b (expect 0)",
+                  $time, Q_sync, Q_async);
+
+     
+        rst = 0;
+        @(posedge clk); #1;
+        D = 1;
+        @(posedge clk); #1;
+        $display("T=%0t ns | After rst release D=1 | Q_sync=%b  Q_async=%b (both expect 1)",
+                  $time, Q_sync, Q_async);
+
+       
+        $display("T=%0t ns | Q_bar_basic=%b  Q_bar_sync=%b  Q_bar_async=%b (all expect 0)",
+                  $time, Q_bar_basic, Q_bar_sync, Q_bar_async);
+
+        $display("-- Simulation complete --");
+        $finish;
+    end
+
+endmodule
