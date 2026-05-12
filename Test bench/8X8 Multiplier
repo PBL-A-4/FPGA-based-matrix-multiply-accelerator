@@ -1,1 +1,33 @@
+module tb_multiplier_8x8;
+    reg  [7:0]  A, B;
+    wire [15:0] Product;
+    reg  [15:0] Expected;
+
+    multiplier_8x8 uut (.A(A), .B(B), .Product(Product));
+
+    task check;
+        input [7:0] a_in, b_in;
+        begin
+            A = a_in; B = b_in;
+            Expected = a_in * b_in;
+            #10;
+            if (Product === Expected)
+                $display("PASS: %0d x %0d = %0d", A, B, Product);
+            else
+                $display("FAIL: %0d x %0d = %0d (expected %0d)", A, B, Product, Expected);
+end
+    endtask
+
+    initial begin
+        check(8'd0,   8'd0);
+        check(8'd1,   8'd1);
+        check(8'd5,   8'd3);
+        check(8'd15,  8'd15);
+        check(8'd255, 8'd255);
+        check(8'd128, 8'd2);
+        check(8'd200, 8'd100);
+        check(8'd7,   8'd11);
+        $finish;
+    end
+endmodule
 
