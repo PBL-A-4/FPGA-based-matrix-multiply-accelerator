@@ -12,7 +12,7 @@ module d_ff (
 endmodule
 
 
-// ------ D Flip-Flop with Synchronous Reset (Active High) ------
+//  D Flip-Flop with Synchronous Reset (Active High) 
 module d_ff_sync_reset (
     input  wire clk,
     input  wire rst,
@@ -31,7 +31,7 @@ module d_ff_sync_reset (
 endmodule
 
 
-// ------ D Flip-Flop with Asynchronous Reset (Active High) ------
+//  D Flip-Flop with Asynchronous Reset (Active High) 
 module d_ff_async_reset (
     input  wire clk,
     input  wire rst,
@@ -50,7 +50,7 @@ module d_ff_async_reset (
 endmodule
 
 
-// ------ N-bit D Register ------
+//  N-bit D Register 
 module d_register #(
     parameter WIDTH = 18
 )(
