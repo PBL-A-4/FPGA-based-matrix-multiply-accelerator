@@ -1,1 +1,50 @@
-
+module tb_ripple_carry_adder_18bit;
+ 
+    reg  [17:0] A, B;
+    reg         Cin;
+    wire [17:0] Sum;
+    wire        Cout, Overflow;
+ 
+    ripple_carry_adder_18bit uut (
+        .A(A), .B(B), .Cin(Cin),
+        .Sum(Sum), .Cout(Cout), .Overflow(Overflow)
+    );
+ 
+    // Prints every time any signal changes - visible in Tcl Console
+    initial
+        $monitor("T=%0t ns | A=%0d B=%0d Cin=%b | Sum=%0d Cout=%b Overflow=%b",
+                  $time, A, B, Cin, Sum, Cout, Overflow);
+ 
+    initial begin
+        A = 0; B = 0; Cin = 0;
+        #5;
+ 
+        // Test 1: simple addition
+        A = 18'd100; B = 18'd200; Cin = 1'b0;
+        #20;
+        $display("Test1: %0d + %0d = %0d | Cout=%b Overflow=%b", A, B, Sum, Cout, Overflow);
+ 
+        // Test 2: max value + carry-in
+        A = 18'h1FFFF; B = 18'h1FFFF; Cin = 1'b1;
+        #20;
+        $display("Test2: 0x%h + 0x%h + 1 = 0x%h | Cout=%b Overflow=%b", A, B, Sum, Cout, Overflow);
+ 
+        // Test 3: zero
+        A = 18'd0; B = 18'd0; Cin = 1'b0;
+        #20;
+        $display("Test3: 0 + 0 = %0d | Cout=%b Overflow=%b", Sum, Cout, Overflow);
+ 
+        // Test 4: powers of two
+        A = 18'd1024; B = 18'd2048; Cin = 1'b0;
+        #20;
+        $display("Test4: %0d + %0d = %0d | Cout=%b Overflow=%b", A, B, Sum, Cout, Overflow);
+ 
+        // Test 5: carry-in effect
+        A = 18'd500; B = 18'd499; Cin = 1'b1;
+        #20;
+        $display("Test5: %0d + %0d + 1 = %0d | Cout=%b Overflow=%b", A, B, Sum, Cout, Overflow);
+ 
+        $display("--- Simulation complete ---");
+        $finish;
+    end
+endmodule 
