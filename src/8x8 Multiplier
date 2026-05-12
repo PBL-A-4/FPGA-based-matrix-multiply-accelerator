@@ -56,6 +56,3 @@ module ripple_carry_adder_18bit (
     assign {Cout, Sum} = A + B + Cin;
 assign Overflow = (A[17] == B[17]) && (Sum[17] != A[17]);
 endmodule
-
-    assign Overflow = (A[17] == B[17]) && (Sum[17] != A[17]);
-endmodule
